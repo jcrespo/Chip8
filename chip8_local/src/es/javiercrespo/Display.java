@@ -18,7 +18,7 @@ public class Display extends JFrame {
     public Display() {
 	
 	setSize(650,360);
-    setResizable(false);
+    //setResizable(false);
     setTitle("Chip8 Display");
 	getContentPane().setBackground(Color.BLACK);
 	//getContentPane().setSize(640, 320);
@@ -52,36 +52,19 @@ public class Display extends JFrame {
 	
     public void paint(Graphics g, short[] screen) {
     	
-    	super.paint(g);
-    	g.setColor(Color.WHITE);
+	    	super.paint(g);
+	    	g.setColor(Color.WHITE);
+	    	
+	    	int i=0;
+	    	for (int x=0; x<COL; x++) {   
+	 		   for (int y=0; y<FIL; y++) {
+	 		   //y+4  x+32
+	 		   if ((screen[i] & 0xFF)  == 1) g.fillRect((y*SCALE)+4, (x*SCALE)+32, SCALE, SCALE);
+	 		   i++;
+	 	   }
+	 		   
+	    }    	
     	
-    	int i=0;
-    	for (int y=0; y<COL; y++) {   
- 		   for (int x=0; x<FIL; x++) {
- 		   //y+4  x+32
- 		   if (screen[i] == 1) g.fillRect((y*SCALE)+4, (x*SCALE)+32, SCALE, SCALE);
- 		   i++;
- 	   }
-    }    	
-    	
-    	
-    	
-    	
-       
-       
-       //g.fillRect((63*SCALE)+4, (31*SCALE)+32, SCALE, SCALE);
-       
-       /*
-    	   for (int y=0; y<COL; y++) {   
-    		   for (int x=0; x<FIL; x++) {
-    		   //y+4  x+32
-    		   if (screen[x][y] == 1) g.fillRect((y*SCALE)+4, (x*SCALE)+32, SCALE, SCALE);
-
-    	   }
-       }
-       */
-       //repaint();
-
     }
     
     

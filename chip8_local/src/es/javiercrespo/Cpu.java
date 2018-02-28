@@ -12,6 +12,6 @@ public class Cpu {
 	public short [] stack = new short[16]; //Stack
 	public short sp; //Stack pointer (value to save in stack array)
 	public Random rnd = new Random();
-	
+	public short[] screen = new short[2048]; // Screen memory
 
 }

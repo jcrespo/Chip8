@@ -23,8 +23,9 @@ public class Chip8 {
 	
 	private static Cpu cpu;
 	private static Display display;
+	private static Sprite sprite;
 	
-	
+	/*
 	public static void main2(String[] args) {
 		cpu = new Cpu();
 		display = new Display();
@@ -33,6 +34,7 @@ public class Chip8 {
 		display.paint(display.getGraphics(), screen);
 
 	}
+	*/
 
 	public static void main(String[] args) throws InterruptedException {
 
@@ -120,15 +122,17 @@ public class Chip8 {
 				
 				case 0xD: 
 					//DRW
+					cpu.v[15] = 0;
 					for (int j=0; j<n; j++) {
-						short sprite = cpu.memory[cpu.i];
-						for (int i=0; i<7; i++) {
-							int px = cpu.v[x] + i & 63;
-							int py = cpu.v[y] + j & 31;
+						short sprite = cpu.memory[cpu.i + j];
+						for (int i=0; i<8; i++) {
+							int px = (cpu.v[x] + i) & 63;
+							int py = (cpu.v[y] + j) & 31;
+							int pos = ((64 * py + px) & 0xFF);
+
 							boolean isActive = (sprite & (1 << (7-i))) != 0;
-							cpu.memory[64 * py + px] = (short) (isActive ? 1 : 0);//cpu.screen?
-							
-							//Video 1h05m (expansor?)
+							if (isActive & (cpu.screen[pos] == 1)) cpu.v[15] = 1;
+							cpu.screen[pos] ^= (short) (isActive ? 1 : 0);
 						}
 					}
 					
@@ -149,17 +153,29 @@ public class Chip8 {
 					case 0x15: cpu.dt = cpu.v[x]; break;
 					case 0x18: cpu.st = cpu.v[x]; break;
 					case 0x1E: cpu.i += cpu.v[x]; break;
+					
 					case 0x29: break;
+					
 					case 0x33: break;
-					case 0x55: break;
-					case 0x65: break;
+					
+					
+					case 0x55:
+						for (int reg=0; reg <=x; reg++) {
+							cpu.memory[cpu.i + reg] = cpu.v[reg];
+						}
+						break;
+					case 0x65:
+						for (int reg=0; reg <=x; reg++) {
+							cpu.v[reg] = cpu.memory[cpu.i + reg];
+						}
+						break;
 					}
 					break;
 			}
 		
 			
 			//Display
-			display.paint(display.getGraphics(), Arrays.copyOfRange(cpu.memory, 0x000, 0xFFF));
+			display.paint(display.getGraphics(), cpu.screen);
 
 			//Increment program counter
 			//end = true;
@@ -206,22 +222,5 @@ public class Chip8 {
 			}
         }
 		
-		/*
-		try {
-			fis = new FileInputStream(file);
-		    fis.read(cpu.memory, 0x200, (int) file.length()); //0x200 -> 512 first bytes
-		} catch (FileNotFoundException e) {
-			System.out.println("File not found.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-		    try {
-		        if (fis != null) {
-		            fis.close();
-		        }
-		    } catch (IOException e) {
-		    }
-		}*/
 	}
 }
