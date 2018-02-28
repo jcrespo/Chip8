@@ -23,23 +23,14 @@ public class Chip8 {
 	
 	private static Cpu cpu;
 	private static Display display;
-	private static Sprite sprite;
+	private static Sprite sprites;
 	
-	/*
-	public static void main2(String[] args) {
-		cpu = new Cpu();
-		display = new Display();
-		
-		short[] screen = Arrays.copyOfRange(cpu.memory, 0x000, 0xFFF); //Display memory
-		display.paint(display.getGraphics(), screen);
-
-	}
-	*/
 
 	public static void main(String[] args) throws InterruptedException {
 
-		cpu = new Cpu();
+		cpu 	= new Cpu();
 		display = new Display();
+		sprites = new Sprite();
 		
 		init();
 		loadRom();
@@ -69,7 +60,9 @@ public class Chip8 {
 				case 1: cpu.pc = nnn; break;
 				
 				case 2:
-					if (cpu.sp < 15) cpu.stack[cpu.sp++] = cpu.pc;
+					if (cpu.sp < 15) {
+						cpu.stack[cpu.sp++] = cpu.pc;
+					}
 					break;
 
 				case 3: if (cpu.v[x] == kk) cpu.pc = (short) (cpu.pc + 2 & 0xFFF); break;
@@ -111,7 +104,11 @@ public class Chip8 {
 					}
 					break;
 				
-				case 9: if (cpu.v[x] != cpu.v[y]) cpu.pc = (short) (cpu.pc + 2 & 0xFFF); break;
+				case 9: 
+					if (cpu.v[x] != cpu.v[y]) {
+						cpu.pc = (short) (cpu.pc + 2 & 0xFFF);
+					}
+					break;
 				
 				case 0xA: cpu.i = nnn; break;
 				
@@ -153,15 +150,16 @@ public class Chip8 {
 					case 0x15: cpu.dt = cpu.v[x]; break;
 					case 0x18: cpu.st = cpu.v[x]; break;
 					case 0x1E: cpu.i += cpu.v[x]; break;
-					
-					case 0x29: break;
-					
-					case 0x33: break;
-					
+					case 0x29: cpu.i = (short) (0x50 + (cpu.v[x] & 0xF) * 5); break; //Draw Sprites
+					case 0x33:
+						cpu.memory[cpu.i + 2] = (short) (cpu.v[x] % 10); 
+						cpu.memory[cpu.i + 1] = (short) (cpu.v[x] / 10 % 10);
+						cpu.memory[cpu.i] = (short) (cpu.v[x] / 100);
+						break;
 					
 					case 0x55:
 						for (int reg=0; reg <=x; reg++) {
-							cpu.memory[cpu.i + reg] = cpu.v[reg];
+							cpu.memory[cpu.i + reg] = cpu.v[reg]; 
 						}
 						break;
 					case 0x65:
@@ -183,6 +181,8 @@ public class Chip8 {
 			if (cpu.pc >= 4096) cpu.pc = 0x200;
 			
             Thread.sleep(1000 / 60);
+            if (cpu.dt > 0) cpu.dt--;
+            if (cpu.st > 0) cpu.st--;
 		}
 
 	}
@@ -193,9 +193,12 @@ public class Chip8 {
 		cpu.pc = 0x200;
 		
 		for (int i=0; i<cpu.memory.length;i++) cpu.memory[i] = 0x00;
+		for (int i=0; i<cpu.screen.length;i++) cpu.screen[i] = 0x00;
 		for (int i=0; i<cpu.stack.length;i++) cpu.stack[i] = 0x00;
 		for (int i=0; i<cpu.v.length;i++) cpu.v[i] = 0x00;
 		
+		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
+
 	}
 	
 	//Hardcoded load pong.rom in memory

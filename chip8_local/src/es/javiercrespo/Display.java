@@ -9,11 +9,9 @@ import javax.swing.JFrame;
 
 public class Display extends JFrame {
 	
-	int SCALE = 10;
+	int SCALE = 5;
     int FIL = 32;
     int COL = 64;
-    //short[][] screen = new short[FIL][COL];
-	
     
     public Display() {
 	
@@ -31,33 +29,16 @@ public class Display extends JFrame {
 	//screen[31][0] = true;
 	//screen[31][63] = true;
 
-	//Generación aleatoria de pixels
-	/*
-	for (int y=0; y<COL; y++) {   
-		   for (int x=0; x<FIL; x++) {
-				Random rnd = new Random();
-				screen[x][y] = rnd.nextBoolean();
-		   }
-	}
-	*/
-	
-	
-
 	}
     
-    public void draw(short[] screen) {
-    	
-    }
-    
-	
     public void paint(Graphics g, short[] screen) {
     	
 	    	super.paint(g);
 	    	g.setColor(Color.WHITE);
 	    	
 	    	int i=0;
-	    	for (int x=0; x<COL; x++) {   
-	 		   for (int y=0; y<FIL; y++) {
+	    	for (int y=0; y<COL; y++) {   
+	 		   for (int x=0; x<FIL; x++) {
 	 		   //y+4  x+32
 	 		   if ((screen[i] & 0xFF)  == 1) g.fillRect((y*SCALE)+4, (x*SCALE)+32, SCALE, SCALE);
 	 		   i++;
