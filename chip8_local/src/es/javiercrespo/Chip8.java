@@ -10,6 +10,7 @@
  */
 package es.javiercrespo;
 
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class Chip8 {
 			short x 	= (short) (opcode >> 8 & 0xF);
 			short y 	= (short) (opcode >> 4 & 0xF);
 			short msb	= (short) (opcode >> 12 & 0xF);
-			
+			/*
 			System.out.println("opcode: " + String.format("0x%04X",opcode));
 			System.out.println("nnn: " + String.format("%03X",nnn));
 			System.out.println("kk: " + String.format("%02X",kk));
@@ -52,7 +53,7 @@ public class Chip8 {
 			System.out.println("x: " + String.format("%01X",x));
 			System.out.println("y: " + String.format("%01X",y));
 			System.out.println("msb: " + String.format("%01X",msb));
-
+			*/
 
 			
 			switch (msb) {
@@ -97,7 +98,6 @@ public class Chip8 {
 					break;
 
 				case 6: 
-					
 					cpu.v[x] = (short) (kk & 0xFF);
 					break;
 
@@ -155,6 +155,33 @@ public class Chip8 {
 				
 				case 0xD: 
 					//DRW
+					/*
+					byte readBytes = 0;
+					byte vf = (byte)0x0;
+					while (readBytes < n){
+						byte currentByte = (byte) cpu.memory[cpu.i + readBytes];
+						for (int i=0; i<=7; i++) {
+							int px = cpu.v[x] & 0xFF;
+							int py = cpu.v[y] & 0xFF;
+							int pos = (64* (py + px) & 0xFF);
+							boolean previousPixel = false;
+							if (cpu.screen[pos] == 1) previousPixel = true;
+							boolean newPixel = previousPixel ^ isBitSet(currentByte, 7-i);
+							short valPixel = 0;
+							if (newPixel == true) valPixel = 1;
+							cpu.screen[pos] = valPixel;
+							
+							if(previousPixel == true && newPixel == false) {
+								vf = (byte)0x01;
+							}
+						}
+						
+						cpu.v[0xF] = vf;
+						readBytes++;
+					}
+					*/
+					//Flag a true?
+					
 					cpu.v[15] = 0;
 					for (int j=0; j<n; j++) {
 						short sprite = cpu.memory[cpu.i + j];
@@ -220,13 +247,18 @@ public class Chip8 {
 
 			//Increment program counter
 			//end = true;
-			//cpu.pc = (short) ((cpu.pc + 2) & 0xFFF);
 			cpu.pc+=0x2;
-			//if (cpu.pc >= 4096) cpu.pc = 0x200;
+			if (cpu.pc >= 4096) cpu.pc = 0x200;
 			
             Thread.sleep(1000 / 60);
-            if (cpu.dt > 0) cpu.dt--;
-            if (cpu.st > 0) cpu.st--;
+            if (cpu.dt > 0) --cpu.dt;
+            if (cpu.st > 0){
+            	if (cpu.st == 1) Toolkit.getDefaultToolkit().beep();
+            	--cpu.st;
+            }
+        	
+            //cpu.screen[0] = cpu.screen[63] = cpu.screen[1984] = cpu.screen[2047] = 1;
+            //display.paint(display.getGraphics(), cpu.screen);
 		}
 
 	}
@@ -241,7 +273,7 @@ public class Chip8 {
 		for (int i=0; i<cpu.stack.length;i++) cpu.stack[i] = 0x00;
 		for (int i=0; i<cpu.v.length;i++) cpu.v[i] = 0x00;
 		
-		//System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
+		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
 
 	}
 	
@@ -270,4 +302,9 @@ public class Chip8 {
         }
 		
 	}
+	
+	private static  Boolean isBitSet(byte b, int bit)
+    {
+        return (b & (1 << bit)) != 0;
+    }
 }
