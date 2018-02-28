@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 
 public class Display extends JFrame {
 	
-	int SCALE = 5;
+	int SCALE = 10;
     int FIL = 32;
     int COL = 64;
     
