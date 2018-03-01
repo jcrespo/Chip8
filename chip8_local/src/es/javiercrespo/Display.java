@@ -27,15 +27,20 @@ public class Display extends JFrame {
     public void paint(Graphics g, short[] screen) {
     	
 	    	super.paint(g);
-	    	g.setColor(Color.WHITE);
+	    	
 	    	
 	    	int i=0;
 	    	for (int y=0; y<FIL; y++) {   
 	 		   for (int x=0; x<COL; x++) {
-	 		   if ((screen[i] & 0xFF)  == 1) g.fillRect((x*SCALE)+10, (y*SCALE)+34, SCALE, SCALE);
-	 		   i++;
-	 	   }
-	    }    	
+		 		   if ((screen[i] & 0xFF) == 1) {
+		 			  g.setColor(Color.WHITE);
+		 		   } else {
+		 			  g.setColor(Color.BLACK);
+		 		   }
+		 		  g.fillRect((x*SCALE)+10, (y*SCALE)+34, SCALE, SCALE);
+		 		  i++;
+	 		   }
+	    	}    	
     }
 
 }

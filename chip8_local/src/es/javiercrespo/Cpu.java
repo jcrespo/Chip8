@@ -14,4 +14,11 @@ public class Cpu {
 	public Random rnd = new Random();
 	public short[] screen = new short[2048]; // Screen memory
 
+
+
+	public void dumpMemory() {
+		for (int i=0; i<memory.length;i++) {
+			System.out.println(String.format("%03X",i) + " : " + String.format("%08X",memory[i]));
+		}
+	}
 }

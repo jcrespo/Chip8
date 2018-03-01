@@ -4,17 +4,14 @@
  * 
  * https://en.wikipedia.org/wiki/CHIP-8 // Description
  * http://devernay.free.fr/hacks/chip8/C8TECH10.HTM // Technical Reference
- * 
+ * http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
  * 
  */
 package es.javiercrespo;
 
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.commons.io.IOUtils;
 
 
@@ -35,17 +32,18 @@ public class Chip8 {
 		
 		init();
 		loadRom();
+		//cpu.dumpMemory();
 		boolean end = false;
 
 		while (!end) {
-			int opcode = (int) (((cpu.memory[cpu.pc] & 0xFF) << 8) + (cpu.memory[cpu.pc+1] & 0xFF));
+			int opcode = (int) ((((cpu.memory[cpu.pc] & 0xFF) << 8) + (cpu.memory[cpu.pc+1] & 0xFF)) & 0xFFFF);
 			short nnn 	= (short) (opcode & 0xFFF);
 			short kk 	= (short) (opcode & 0xFF);
 			short n 	= (short) (opcode & 0xF);
 			short x 	= (short) (opcode >> 8 & 0xF);
 			short y 	= (short) (opcode >> 4 & 0xF);
 			short msb	= (short) (opcode >> 12 & 0xF);
-			/*
+			
 			System.out.println("opcode: " + String.format("0x%04X",opcode));
 			System.out.println("nnn: " + String.format("%03X",nnn));
 			System.out.println("kk: " + String.format("%02X",kk));
@@ -53,7 +51,7 @@ public class Chip8 {
 			System.out.println("x: " + String.format("%01X",x));
 			System.out.println("y: " + String.format("%01X",y));
 			System.out.println("msb: " + String.format("%01X",msb));
-			*/
+			
 
 			
 			switch (msb) {
@@ -65,35 +63,35 @@ public class Chip8 {
 							}
 							
 						} else if (opcode==0X00EE) {
-								cpu.pc = cpu.sp;
-								cpu.sp = (byte) (cpu.sp - 0x01);
+								cpu.pc = cpu.sp--;
+								//cpu.sp = (short) (cpu.sp - 0x01);
 						}
 					break;
 					
-				case 1: cpu.pc = (short) (nnn & 0x0FFF);
-				break;
+				case 1: cpu.pc = (short) (nnn & 0x0FFF); break;
 				
 				case 2:
 					if (cpu.sp < 15) {
-						cpu.stack[cpu.sp++] = cpu.pc;
+						cpu.stack[++cpu.sp] = cpu.pc;
 					}
+					cpu.pc = nnn;
 					break;
 
 				case 3: 
 					if (cpu.v[x]  == kk) {
-						cpu.pc = (short) (cpu.pc + (short)0x0002);
+						cpu.pc += 0x0002;
 					}
 					break;
 
 				case 4: 
-					if (cpu.v[x] == kk) {
-						cpu.pc = (short) (cpu.pc + 2 & 0xFFF);
+					if (cpu.v[x] != kk) {
+						cpu.pc += 0x0002;
 					}
 					break;
 
 				case 5: 
 					if (cpu.v[x] == cpu.v[y]) {
-						cpu.pc = (short) (cpu.pc + 2 & 0xFFF);
+						cpu.pc += 0x0002;
 					}
 					break;
 
@@ -113,36 +111,67 @@ public class Chip8 {
 						
 						case 3: cpu.v[x] = (short) (cpu.v[x] ^ cpu.v[y]); break;
 						
-						case 4: 
-								cpu.v[0xF] = (short) ((cpu.v[x] > cpu.v[x] + cpu.v[y]) ? 1 : 0); // Carry
-								cpu.v[x] += cpu.v[y];
+						case 4:
+								int sum = cpu.v[x] + cpu.v[y];
+
+								if (sum > 0xFF) cpu.v[0xF] = 1;
+								else cpu.v[0xF] = 0;
+
+								cpu.v[x] = (short) (sum & 0xFF);
+
+								/*cpu.v[0xF] = (short) ((cpu.v[x] > cpu.v[x] + cpu.v[y]) ? 1 : 0); // Carry
+								cpu.v[x] += cpu.v[y];*/
 							break;
 							
 						case 5:
+							
+							if(cpu.v[x] > cpu.v[y]) cpu.v[0xF] = 1;
+							else cpu.v[0xF] = 0;
+							
+							short sub = (short)((cpu.v[x] - cpu.v[y]) & 0xFF);
+							cpu.v[x] = sub;							
+							
+							/*
 								cpu.v[0xF] = (short) ((cpu.v[x] > cpu.v[y]) ? 1 : 0); // Carry
 								cpu.v[x] -= cpu.v[y];
+								*/
 							break;
 							
 						case 6: 
-								cpu.v[0xF] = (short) (cpu.v[x] & 0x01); // Carry
-								cpu.v[x] >>= 1;
+								cpu.v[0xF] = (short) (cpu.v[x] & 0x1); // Carry
+								cpu.v[x] >>>= 1;
 								break;
 								
 						case 7: 
+								if (cpu.v[y] > cpu.v[x]) cpu.v[0xF] = 1;
+								else cpu.v[0xF] = 0;
+								
+								cpu.v[x] = (short) (cpu.v[y] - cpu.v[x]);
+								
+								/*
 								cpu.v[0xF] = (short) ((cpu.v[y] > cpu.v[x]) ? 1 : 0); // Carry
 								cpu.v[x] = (short) (cpu.v[y] - cpu.v[x]);
+								*/
 								break;
 								
 						case 0xE:
+							
+								byte b = (byte)(cpu.v[x] >>> 7 & 0x1);
+								cpu.v[0xF] = b;
+								cpu.v[x] = (short)((cpu.v[x] << 1) & 0xFF);
+								
+								/*
 								cpu.v[0xF] = (short) (((cpu.v[x] & 0x80) != 0) ? 1 : 0);
 								cpu.v[x] <<= 1;
+								*/
 								break;
 					}
 					break;
 				
 				case 9: 
 					if (cpu.v[x] != cpu.v[y]) {
-						cpu.pc = (short) (cpu.pc + 2 & 0xFFF);
+						cpu.pc += 0x0002;
+						//cpu.pc = (short) (cpu.pc + 2 & 0xFFF);
 					}
 					break;
 				
@@ -151,7 +180,7 @@ public class Chip8 {
 				case 0xB: cpu.pc = (short) ((cpu.v[0] + nnn & 0XFFF)); break;
 				
 				case 0xC:
-					cpu.v[x] = (short) ((short) cpu.rnd.nextInt() & kk); break; //Random value
+					cpu.v[x] = (short) (cpu.rnd.nextInt(256) & kk); break; //Random value
 				
 				case 0xD: 
 					//DRW
@@ -195,7 +224,7 @@ public class Chip8 {
 							cpu.screen[pos] ^= (short) (isActive ? 1 : 0);
 						}
 					}
-					
+
 					break;
 				
 				case 0xE:
@@ -203,13 +232,13 @@ public class Chip8 {
 					switch (kk) {
 						case 0x9E:
 							if (cpu.v[x] == keyboard.getCurrentKey()) {
-								cpu.pc+=2 & 0xFFF;
+								cpu.pc+=0x0002;
 							}
 							break;
 							
 						case 0xA1:
 							if (cpu.v[x] != keyboard.getCurrentKey()) {
-								cpu.pc+=2 & 0xFFF;
+								cpu.pc+=0x0002;
 							}
 							break;
 					}
@@ -217,9 +246,11 @@ public class Chip8 {
 
 				case 0xF:
 					switch(kk) {
+					
 					case 0x07: cpu.v[x] = (short) (cpu.dt & 0xFF); break;
 					
 					case 0x0A:
+						
 				        int currentKey = keyboard.getCurrentKey();
 				        while (currentKey == 0) {
 				            try {
@@ -230,7 +261,7 @@ public class Chip8 {
 				            currentKey = keyboard.getCurrentKey();
 				        }
 				        cpu.v[x] = (short) currentKey;
-						
+
 						break;
 					
 					case 0x15: cpu.dt = cpu.v[x]; break;
@@ -239,11 +270,11 @@ public class Chip8 {
 					
 					case 0x1E: cpu.i += cpu.v[x]; break;
 					
-					case 0x29: cpu.i = (short) (0x50 + (cpu.v[x] & 0xF) * 5); break; //Draw Sprites
+					case 0x29: cpu.i = (short) (0x50 + cpu.v[x] * 5); break; //Draw Sprites
 					
 					case 0x33:
 						cpu.memory[cpu.i + 2] = (short) (cpu.v[x] % 10); 
-						cpu.memory[cpu.i + 1] = (short) (cpu.v[x] / 10 % 10);
+						cpu.memory[cpu.i + 1] = (short) (cpu.v[x] / 10/* % 10*/);
 						cpu.memory[cpu.i] = (short) (cpu.v[x] / 100);
 						break;
 					
@@ -259,18 +290,26 @@ public class Chip8 {
 						}
 						break;
 					}
-					break;
+					//break;
 			}
+			
+			
+			
+			
 		
 			
 			//Display
-			display.paint(display.getGraphics(), cpu.screen);
+			if (cpu.v[15] == 1) {
+				display.paint(display.getGraphics(), cpu.screen);
+			}
+			
 
 			//Increment program counter
 			//end = true;
 			cpu.pc+=0x2;
 			if (cpu.pc >= 4096) cpu.pc = 0x200;
 			
+			//1000 / 60
             Thread.sleep(1000 / 60);
             if (cpu.dt > 0) --cpu.dt;
             if (cpu.st > 0){
@@ -293,7 +332,7 @@ public class Chip8 {
 		for (int i=0; i<cpu.screen.length;i++) cpu.screen[i] = 0x00;
 		for (int i=0; i<cpu.stack.length;i++) cpu.stack[i] = 0x00;
 		for (int i=0; i<cpu.v.length;i++) cpu.v[i] = 0x00;
-		
+
 		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
 		display.addKeyListener(keyboard);
 
@@ -302,7 +341,7 @@ public class Chip8 {
 	//Hardcoded load pong.rom in memory
 	private static void loadRom() {
 		
-		File file = new File("roms/UFO");
+		File file = new File("roms/PONG");
 		FileInputStream fis = null;
 		
 		try {
@@ -310,7 +349,7 @@ public class Chip8 {
             byte[] data = IOUtils.toByteArray(fis);
             int currentOffset = 0x200;
             for (byte theByte : data) {
-            	cpu.memory[currentOffset] = (byte) (theByte & 0xFF);
+            	cpu.memory[currentOffset] = (short) (theByte & 0xFF);
                 currentOffset++;
             }
         } catch (Exception e) {
