@@ -5,7 +5,6 @@
  * https://en.wikipedia.org/wiki/CHIP-8 // Description
  * http://devernay.free.fr/hacks/chip8/C8TECH10.HTM // Technical Reference
  * 
- * Inicializar, 	Obtener Opcode, Procesar, Tareas de Control
  * 
  */
 package es.javiercrespo;
@@ -24,14 +23,15 @@ public class Chip8 {
 	
 	private static Cpu cpu;
 	private static Display display;
+	private static Keyboard keyboard;
 	private static Sprite sprites;
-	
 
 	public static void main(String[] args) throws InterruptedException {
 
-		cpu 	= new Cpu();
-		display = new Display();
-		sprites = new Sprite();
+		cpu 		= new Cpu();
+		display 	= new Display();
+		keyboard 	= new Keyboard();
+		sprites		= new Sprite();
 		
 		init();
 		loadRom();
@@ -201,8 +201,17 @@ public class Chip8 {
 				case 0xE:
 						
 					switch (kk) {
-						case 0x9E: break;
-						case 0xA1: break;
+						case 0x9E:
+							if (cpu.v[x] == keyboard.getCurrentKey()) {
+								cpu.pc+=2 & 0xFFF;
+							}
+							break;
+							
+						case 0xA1:
+							if (cpu.v[x] != keyboard.getCurrentKey()) {
+								cpu.pc+=2 & 0xFFF;
+							}
+							break;
 					}
 					break;
 
@@ -210,7 +219,19 @@ public class Chip8 {
 					switch(kk) {
 					case 0x07: cpu.v[x] = (short) (cpu.dt & 0xFF); break;
 					
-					case 0x0A: break;
+					case 0x0A:
+				        int currentKey = keyboard.getCurrentKey();
+				        while (currentKey == 0) {
+				            try {
+				                Thread.sleep(300);
+				            } catch (InterruptedException e) {
+				                e.printStackTrace();
+				            }
+				            currentKey = keyboard.getCurrentKey();
+				        }
+				        cpu.v[x] = (short) currentKey;
+						
+						break;
 					
 					case 0x15: cpu.dt = cpu.v[x]; break;
 					
@@ -253,7 +274,7 @@ public class Chip8 {
             Thread.sleep(1000 / 60);
             if (cpu.dt > 0) --cpu.dt;
             if (cpu.st > 0){
-            	if (cpu.st == 1) Toolkit.getDefaultToolkit().beep();
+            	if (cpu.st == 1)// Toolkit.getDefaultToolkit().beep();
             	--cpu.st;
             }
         	
@@ -274,13 +295,14 @@ public class Chip8 {
 		for (int i=0; i<cpu.v.length;i++) cpu.v[i] = 0x00;
 		
 		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
+		display.addKeyListener(keyboard);
 
 	}
 	
 	//Hardcoded load pong.rom in memory
 	private static void loadRom() {
 		
-		File file = new File("roms/PONG");
+		File file = new File("roms/UFO");
 		FileInputStream fis = null;
 		
 		try {
