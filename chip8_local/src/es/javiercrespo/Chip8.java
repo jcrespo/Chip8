@@ -12,6 +12,9 @@ package es.javiercrespo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import javax.swing.JFrame;
+
 import org.apache.commons.io.IOUtils;
 
 
@@ -33,6 +36,7 @@ public class Chip8 {
 		init();
 		loadRom();
 		//cpu.dumpMemory();
+		prepareGUI();
 		boolean end = false;
 
 		while (!end) {
@@ -43,7 +47,7 @@ public class Chip8 {
 			short x 	= (short) (opcode >> 8 & 0xF);
 			short y 	= (short) (opcode >> 4 & 0xF);
 			short msb	= (short) (opcode >> 12 & 0xF);
-			
+			/*
 			System.out.println("opcode: " + String.format("0x%04X",opcode));
 			System.out.println("nnn: " + String.format("%03X",nnn));
 			System.out.println("kk: " + String.format("%02X",kk));
@@ -51,7 +55,7 @@ public class Chip8 {
 			System.out.println("x: " + String.format("%01X",x));
 			System.out.println("y: " + String.format("%01X",y));
 			System.out.println("msb: " + String.format("%01X",msb));
-			
+			*/
 
 			
 			switch (msb) {
@@ -71,7 +75,7 @@ public class Chip8 {
 				case 1: cpu.pc = (short) (nnn & 0x0FFF); break;
 				
 				case 2:
-					if (cpu.sp < 15) {
+					if (cpu.sp < 16) {
 						cpu.stack[++cpu.sp] = cpu.pc;
 					}
 					cpu.pc = nnn;
@@ -211,20 +215,31 @@ public class Chip8 {
 					*/
 					//Flag a true?
 					
+					//System.out.println ("DRW x:" + String.format("%01X",x) + " y:" + String.format("%01X",y) + " n:" + String.format("%01X",n));
+					
 					cpu.v[15] = 0;
 					for (int j=0; j<n; j++) {
 						short sprite = cpu.memory[cpu.i + j];
+						//System.out.println("sprite: " + Integer.toBinaryString(cpu.memory[cpu.i + j]));
 						for (int i=0; i<8; i++) {
 							int px = (cpu.v[x] + i) & 63;
 							int py = (cpu.v[y] + j) & 31;
-							int pos = ((64 * py + px) & 0xFF);
+							int pos = ((64 * py + px) & 0xFFFF);
 
-							boolean isActive = (sprite & (1 << (7-i))) != 0;
+							boolean isActive = ((sprite & (1 << (7-i))) != 0);
+							
+							//System.out.print(sprite & (1 << (7-i)));
+							//System.out.print("  - isActive: "+isActive);
+							//System.out.println("  - cpu.screen[pos]" + cpu.screen[pos]);
+							
+							
 							if (isActive & (cpu.screen[pos] == 1)) cpu.v[15] = 1;
 							cpu.screen[pos] ^= (short) (isActive ? 1 : 0);
 						}
 					}
 
+					display.drawFlag = true;
+					
 					break;
 				
 				case 0xE:
@@ -270,7 +285,7 @@ public class Chip8 {
 					
 					case 0x1E: cpu.i += cpu.v[x]; break;
 					
-					case 0x29: cpu.i = (short) (0x50 + cpu.v[x] * 5); break; //Draw Sprites
+					case 0x29: cpu.i = (short) (0x65 + cpu.v[x] * 5); break; //Draw Sprites
 					
 					case 0x33:
 						cpu.memory[cpu.i + 2] = (short) (cpu.v[x] % 10); 
@@ -296,12 +311,12 @@ public class Chip8 {
 			
 			
 			
-		
-			
 			//Display
-			if (cpu.v[0xF] == 1) {
+			if (display.drawFlag = true) {
 				display.paint(display.getGraphics(), cpu.screen);
+				//display.paintFullScreen(cpu.screen);
 			}
+			display.drawFlag = false;
 			
 
 			//Increment program counter
@@ -363,6 +378,17 @@ public class Chip8 {
         }
 		
 	}
+	
+	
+	private static void prepareGUI(){
+        JFrame f = new JFrame("CHIP-8 emulator");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.add(display);
+        f.pack();
+        f.setResizable(false);
+        f.setVisible(true);
+
+}
 	
 	private static  Boolean isBitSet(byte b, int bit)
     {
