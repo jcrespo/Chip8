@@ -299,7 +299,7 @@ public class Chip8 {
 		
 			
 			//Display
-			if (cpu.v[15] == 1) {
+			if (cpu.v[0xF] == 1) {
 				display.paint(display.getGraphics(), cpu.screen);
 			}
 			
@@ -333,7 +333,7 @@ public class Chip8 {
 		for (int i=0; i<cpu.stack.length;i++) cpu.stack[i] = 0x00;
 		for (int i=0; i<cpu.v.length;i++) cpu.v[i] = 0x00;
 
-		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, 80);//Sprites
+		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, sprites.sprites.length);//Sprites
 		display.addKeyListener(keyboard);
 
 	}
