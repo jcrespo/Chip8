@@ -292,7 +292,7 @@ public class ProcesingUnit {
 		
 
 
-		cpu.pc+=0x2; //Increment program counter
+		cpu.pc += 0x2; //Increment program counter
 		//if (cpu.pc >= 4096) cpu.pc = 0x200;
 		
         try {
