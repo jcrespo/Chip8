@@ -1,14 +1,13 @@
-package es.javiercrespo;
+ package es.javiercrespo;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class Keyboard extends KeyAdapter {
 	
-    private int currentKeyPressed = 0;
-    private int debugKeyPressed;	
-
-	public static final int[] KeyCodeMap = {
+    private int curKey = 0;
+    
+    public static final int[] KeyCodeMap = {
             KeyEvent.VK_1, // Key 1
             KeyEvent.VK_2, // Key 2
             KeyEvent.VK_3, // Key 3
@@ -28,10 +27,13 @@ public class Keyboard extends KeyAdapter {
 	};
 	
 	 @Override
-	    public void keyPressed(KeyEvent e) {
+	 public void keyPressed(KeyEvent e) {
 
-		 	debugKeyPressed = e.getKeyCode();
-            currentKeyPressed = mapKeycodeToChip8Key(e.getKeyCode());
+		 	e.getKeyCode();
+            curKey = mapKeycodeToChip8Key(e.getKeyCode());
+		 	System.out.println(String.format("%01X", curKey));
+            
+
 	}
 	 
 	 public int mapKeycodeToChip8Key(int keycode) {
@@ -44,8 +46,8 @@ public class Keyboard extends KeyAdapter {
 	}	
 	 
 	 public int getCurrentKey() {
-		 	System.out.println(String.format("%01X", currentKeyPressed));
-	        return currentKeyPressed;
+		 	System.out.println(String.format("%01X", curKey));
+	        return curKey;
 	}
 	
 }

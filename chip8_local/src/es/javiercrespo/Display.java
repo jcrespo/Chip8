@@ -3,7 +3,11 @@ package es.javiercrespo;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferStrategy;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Display extends JPanel {
@@ -19,6 +23,9 @@ public class Display extends JPanel {
     	setBackground(Color.BLACK);
     	
 	}
+    
+    
+
     
     public Dimension getPreferredSize() {
         return new Dimension(COL * SCALE, FIL * SCALE);
