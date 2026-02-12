@@ -104,7 +104,7 @@ public class ProcesingUnit {
 				break;
 
 			case 7:
-				cpu.v[x] = (short) (cpu.v[x] + kk);
+				cpu.v[x] = (short) ((cpu.v[x] + kk) & 0xFF);
 				break;
 
 			case 8:
@@ -126,12 +126,14 @@ public class ProcesingUnit {
 						break;
 
 					case 4:
-						int sum = cpu.v[x] + cpu.v[y];
+						int v_x = cpu.v[x] & 0xFF;
+						int v_y = cpu.v[y] & 0xFF;
+						int sum = v_x + v_y;
 
 						if (sum > 0xFF) {
-							cpu.v[0xF] = (byte) 0x1;
+							cpu.v[0xF] = 1;
 						} else {
-							cpu.v[0xF] = (byte) 0x0;
+							cpu.v[0xF] = 0;
 						}
 
 						cpu.v[x] = (short) (sum & 0xFF);
@@ -152,7 +154,7 @@ public class ProcesingUnit {
 
 					case 6:
 						cpu.v[0xF] = (short) (cpu.v[x] & 0x1); // Carry
-						cpu.v[x] >>>= 1 & 0xFF; // & 0xFF? Not sure
+						cpu.v[x] = (short) ((cpu.v[x] & 0xFF) >>> 1);
 						break;
 
 					case 7:
@@ -301,9 +303,10 @@ public class ProcesingUnit {
 						break;
 
 					case 0x33:
-						cpu.memory[cpu.i] = (short) (cpu.v[x] / 100);
-						cpu.memory[cpu.i + 1] = (short) ((cpu.v[x] % 100) / 10);
-						cpu.memory[cpu.i + 2] = (short) ((cpu.v[x] % 100) % 10);
+						int val = cpu.v[x] & 0xFF;
+						cpu.memory[cpu.i] = (short) (val / 100);
+						cpu.memory[cpu.i + 1] = (short) ((val % 100) / 10);
+						cpu.memory[cpu.i + 2] = (short) (val % 10);
 						break;
 
 					case 0x55:
