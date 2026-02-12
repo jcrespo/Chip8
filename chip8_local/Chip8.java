@@ -31,6 +31,7 @@ public class Chip8 {
 
 		cpu 		= new Cpu();
 		display 	= new Display();
+		display.setScreen(cpu.screen);
 		keyboard 	= new Keyboard();
 		pu			= new ProcesingUnit(cpu, keyboard, display);
 		sprites		= new Sprite();

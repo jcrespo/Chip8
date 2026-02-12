@@ -22,9 +22,9 @@ public class ProcesingUnit {
 		updateTimers();
 	
 		if (display.drawFlag) {
-       		display.paint(display.getGraphics(), cpu.screen);
-       		display.drawFlag = false;
-    	}
+			display.repaint();
+			display.drawFlag = false;
+		}
 
 		try {
 			Thread.sleep(1000 / 60);
