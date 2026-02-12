@@ -72,7 +72,7 @@ public class Chip8 {
 
 	private static void loadRom() {
 		
-		File file = new File("chip8_local/roms/INVADERS");
+		File file = new File("roms/INVADERS");
 		FileInputStream fis = null;
 		
 		try {
