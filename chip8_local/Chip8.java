@@ -38,7 +38,16 @@ public class Chip8 {
 		
 		
 		init();
-		loadRom();
+
+		String romPath = "roms/INVADERS";
+		if (args.length > 0) {
+			romPath = args[0];
+		} else {
+			System.out.println("No ROM specified. Loading default: roms/INVADERS");
+			System.out.println("Usage: java Chip8 [path_to_rom]");
+		}
+
+		loadRom(romPath);
 		//cpu.dumpMemory();
 		prepareGUI();
 		
@@ -70,9 +79,9 @@ public class Chip8 {
 	}
 	
 
-	private static void loadRom() {
+	private static void loadRom(String romPath) {
 		
-		File file = new File("roms/INVADERS");
+		File file = new File(romPath);
 		FileInputStream fis = null;
 		
 		try {
@@ -84,13 +93,16 @@ public class Chip8 {
             	cpu.memory[currentOffset] = (short) (theByte & 0xFF);
                 currentOffset++;
             }
+            System.out.println("Successfully loaded ROM: " + romPath);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println("Error loading ROM: " + e.getMessage());
         } finally {
-        	try {
-				fis.close();
-			} catch (IOException e) {
-				System.out.println(e.getMessage());
+        	if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					System.out.println(e.getMessage());
+				}
 			}
         }
 		
