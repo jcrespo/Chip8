@@ -1,18 +1,12 @@
-/*
- * Another Chip8 emulator - For educational purposes
- * 2018 - Javier Crespo
- * 
- * https://en.wikipedia.org/wiki/CHIP-8 // Description
- * http://devernay.free.fr/hacks/chip8/C8TECH10.HTM // Technical Reference
- * http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
- * 
- */
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.swing.JFrame;
 
+/**
+ * Main entry point for the CHIP-8 emulator.
+ */
 public class Chip8 {
 
 	private static Cpu cpu;
@@ -21,18 +15,17 @@ public class Chip8 {
 	private static ProcessingUnit pu;
 	private static Sprite sprites;
 
-	public static void main(String[] args) throws InterruptedException {
-
+	public static void main(String[] args) {
 		cpu = new Cpu();
 		display = new Display();
-		display.setScreen(cpu.screen);
+		display.setScreen(cpu.getScreen());
 		keyboard = new Keyboard();
 		pu = new ProcessingUnit(cpu, keyboard, display);
 		sprites = new Sprite();
 
 		init();
 
-		String romPath = "roms/INVADERS";
+		var romPath = "roms/INVADERS";
 		if (args.length > 0) {
 			romPath = args[0];
 		} else {
@@ -41,76 +34,66 @@ public class Chip8 {
 		}
 
 		loadRom(romPath);
-		// cpu.dumpMemory();
 		prepareGUI();
 
-		boolean end = false;
-
-		while (!end) {
+		while (true) {
 			pu.run();
-			// end = true;
 		}
-
 	}
 
 	private static void init() {
+		cpu.setSp((short) 0);
+		cpu.setI((short) 0);
+		cpu.setDt((short) 0);
+		cpu.setSt((short) 0);
+		cpu.setPc((short) 0x200);
 
-		cpu.sp = cpu.i = cpu.dt = cpu.st = 0x00;
-		cpu.pc = 0x200;
+		var memory = cpu.getMemory();
+		var screen = cpu.getScreen();
+		var stack = cpu.getStack();
+		var registers = cpu.getV();
 
-		for (int i = 0; i < cpu.memory.length; i++)
-			cpu.memory[i] = 0x00;
-		for (int i = 0; i < cpu.screen.length; i++)
-			cpu.screen[i] = 0x00;
-		for (int i = 0; i < cpu.stack.length; i++)
-			cpu.stack[i] = 0x00;
-		for (int i = 0; i < cpu.v.length; i++)
-			cpu.v[i] = 0x00;
+		for (var i = 0; i < memory.length; i++)
+			memory[i] = 0x00;
+		for (var i = 0; i < screen.length; i++)
+			screen[i] = 0x00;
+		for (var i = 0; i < stack.length; i++)
+			stack[i] = 0x00;
+		for (var i = 0; i < registers.length; i++)
+			registers[i] = 0x00;
 
-		System.arraycopy(sprites.sprites, 0, cpu.memory, 0x50, sprites.sprites.length);// Sprites
+		System.arraycopy(sprites.data(), 0, memory, 0x50, sprites.data().length);
 		display.addKeyListener(keyboard);
-
 	}
 
-	private static void loadRom(String romPath) {
-
-		File file = new File(romPath);
-		FileInputStream fis = null;
-
+	private static void loadRom(String romPathString) {
+		var path = Path.of(romPathString);
 		try {
-			fis = new FileInputStream(file);
-			// byte[] data = IOUtils.toByteArray(fis);
-			byte[] data = fis.readAllBytes();
-			int currentOffset = 0x200;
-			for (byte theByte : data) {
-				cpu.memory[currentOffset] = (short) (theByte & 0xFF);
+			var data = Files.readAllBytes(path);
+			var memory = cpu.getMemory();
+			var currentOffset = 0x200;
+
+			for (var b : data) {
+				if (currentOffset >= memory.length)
+					break;
+				memory[currentOffset] = (short) (b & 0xFF);
 				currentOffset++;
 			}
-			System.out.println("Successfully loaded ROM: " + romPath);
-		} catch (Exception e) {
+			System.out.println("Successfully loaded ROM: " + romPathString);
+		} catch (IOException e) {
 			System.err.println("Error loading ROM: " + e.getMessage());
-		} finally {
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					System.out.println(e.getMessage());
-				}
-			}
 		}
-
 	}
 
 	private static void prepareGUI() {
-		JFrame f = new JFrame("CHIP-8 emulator");
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		var frame = new JFrame("CHIP-8 emulator");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		display.setFocusable(true);
-		f.add(display);
-		f.pack();
-		f.setResizable(false);
-		f.setVisible(true);
-		f.addKeyListener(keyboard);
+		frame.add(display);
+		frame.pack();
+		frame.setResizable(false);
+		frame.setVisible(true);
+		frame.addKeyListener(keyboard);
 		display.requestFocusInWindow();
 	}
-
 }
