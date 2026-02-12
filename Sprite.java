@@ -1,5 +1,3 @@
-//package es.javiercrespo;
-
 public class Sprite {
 
 	public short[] sprites = {

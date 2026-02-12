@@ -1,5 +1,3 @@
-//package es.javiercrespo;
-
 import java.util.Random;
 
 public class Cpu {

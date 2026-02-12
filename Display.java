@@ -1,5 +1,3 @@
-//package es.javiercrespo;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -36,7 +34,8 @@ public class Display extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (screen == null) return;
+        if (screen == null)
+            return;
 
         for (int y = 0; y < FIL; y++) {
             for (int x = 0; x < COL; x++) {
