@@ -65,8 +65,8 @@ public class ProcesingUnit {
 					display.drawFlag = true;
 
 				} else if (opcode == 0X00EE) {
-					cpu.pc = cpu.stack[cpu.sp];
 					if (cpu.sp > 0) cpu.sp--;
+					cpu.pc = cpu.stack[cpu.sp];
 				}
 				break;
 
@@ -75,9 +75,9 @@ public class ProcesingUnit {
 				break;
 
 			case 2:
-				// Overflow
-				cpu.sp++;
+				// CALL nnn
 				cpu.stack[cpu.sp] = cpu.pc;
+				cpu.sp++;
 				cpu.pc = (short) nnn;
 				break;
 
@@ -253,19 +253,13 @@ public class ProcesingUnit {
 
 				switch (kk) {
 					case 0x9E:
-
-						//System.out.println("cpu.v[x]:" + cpu.v[x] + " - " + "Key: " + keyboard.getCurrentKey());
-
-						if (cpu.v[x] == keyboard.getCurrentKey()) {
+						if (keyboard.isKeyDown(cpu.v[x])) {
 							cpu.pc += 2;
 						}
 						break;
 
 					case 0xA1:
-
-						//System.out.println("cpu.v[x]:" + cpu.v[x] + " - " + "Key: " + keyboard.getCurrentKey());
-
-						if (cpu.v[x] != keyboard.getCurrentKey()) {
+						if (!keyboard.isKeyDown(cpu.v[x])) {
 							cpu.pc += 2;
 						}
 						break;
@@ -280,12 +274,12 @@ public class ProcesingUnit {
 						break;
 
 					case 0x0A:
-						int curKey = keyboard.getCurrentKey();
+						int key = keyboard.getLastKeyPressed();
 
-						if (curKey == 0) {
+						if (key == -1) {
 							cpu.pc -= 2;
 						} else {
-							cpu.v[x] = (short) curKey;
+							cpu.v[x] = (short) key;
 						}
 
 						break;
