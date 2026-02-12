@@ -3,7 +3,7 @@ import java.awt.event.KeyEvent;
 
 public class Keyboard extends KeyAdapter {
 
-    private boolean[] keys = new boolean[16];
+    private final boolean[] keys = new boolean[16];
     private int lastKeyPressed = -1;
 
     public static final int[] KeyCodeMap = {
@@ -60,7 +60,7 @@ public class Keyboard extends KeyAdapter {
 
     public int getLastKeyPressed() {
         int key = lastKeyPressed;
-        lastKeyPressed = -1; // Reset after reading to emulate "wait for next press"
+        lastKeyPressed = -1;
         return key;
     }
 }

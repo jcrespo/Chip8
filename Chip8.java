@@ -18,7 +18,7 @@ public class Chip8 {
 	private static Cpu cpu;
 	private static Display display;
 	private static Keyboard keyboard;
-	private static ProcesingUnit pu;
+	private static ProcessingUnit pu;
 	private static Sprite sprites;
 
 	public static void main(String[] args) throws InterruptedException {
@@ -27,7 +27,7 @@ public class Chip8 {
 		display = new Display();
 		display.setScreen(cpu.screen);
 		keyboard = new Keyboard();
-		pu = new ProcesingUnit(cpu, keyboard, display);
+		pu = new ProcessingUnit(cpu, keyboard, display);
 		sprites = new Sprite();
 
 		init();
@@ -104,12 +104,13 @@ public class Chip8 {
 	private static void prepareGUI() {
 		JFrame f = new JFrame("CHIP-8 emulator");
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		display.setFocusable(true);
 		f.add(display);
 		f.pack();
 		f.setResizable(false);
 		f.setVisible(true);
 		f.addKeyListener(keyboard);
-
+		display.requestFocusInWindow();
 	}
 
 }

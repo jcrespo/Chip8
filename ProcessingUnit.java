@@ -1,12 +1,12 @@
 import java.util.Arrays;
 
-public class ProcesingUnit {
+public class ProcessingUnit {
 
 	private Cpu cpu;
 	private Keyboard keyboard;
 	private Display display;
 
-	public ProcesingUnit(Cpu cpu, Keyboard keyboard, Display display) {
+	public ProcessingUnit(Cpu cpu, Keyboard keyboard, Display display) {
 		this.cpu = cpu;
 		this.keyboard = keyboard;
 		this.display = display;
@@ -14,13 +14,13 @@ public class ProcesingUnit {
 
 	public void run() {
 		int instructionsPerFrame = 15;
-		
+
 		for (int i = 0; i < instructionsPerFrame; i++) {
 			cycle();
 		}
 
 		updateTimers();
-	
+
 		if (display.drawFlag) {
 			display.repaint();
 			display.drawFlag = false;
@@ -31,10 +31,8 @@ public class ProcesingUnit {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-
-
 
 	public void cycle() {
 
@@ -48,15 +46,16 @@ public class ProcesingUnit {
 
 		cpu.pc += 0x2; // Increment program counter
 		// if (cpu.pc >= 4096) cpu.pc = 0x200;
-		
-		/*System.out.println("opcode: " + String.format("0x%04X",opcode));
-		System.out.println("nnn: " + String.format("%03X",nnn));
-		System.out.println("kk: " + String.format("%02X",kk));
-		System.out.println("n: " + String.format("%01X",n));
-		System.out.println("x: " + String.format("%01X",x));
-		System.out.println("y: " + String.format("%01X",y));
-		System.out.println("msb: " + String.format("%01X",msb));*/
-		
+
+		/*
+		 * System.out.println("opcode: " + String.format("0x%04X",opcode));
+		 * System.out.println("nnn: " + String.format("%03X",nnn));
+		 * System.out.println("kk: " + String.format("%02X",kk));
+		 * System.out.println("n: " + String.format("%01X",n));
+		 * System.out.println("x: " + String.format("%01X",x));
+		 * System.out.println("y: " + String.format("%01X",y));
+		 * System.out.println("msb: " + String.format("%01X",msb));
+		 */
 
 		switch (msb) {
 			case 0:
@@ -65,7 +64,8 @@ public class ProcesingUnit {
 					display.drawFlag = true;
 
 				} else if (opcode == 0X00EE) {
-					if (cpu.sp > 0) cpu.sp--;
+					if (cpu.sp > 0)
+						cpu.sp--;
 					cpu.pc = cpu.stack[cpu.sp];
 				}
 				break;
@@ -158,21 +158,18 @@ public class ProcesingUnit {
 						break;
 
 					case 7:
-						if (cpu.v[y] > cpu.v[x]) {
-							cpu.v[0xF] = (byte) 0x1;
+						if ((cpu.v[y] & 0xFF) > (cpu.v[x] & 0xFF)) {
+							cpu.v[0xF] = (short) 0x1;
 						} else {
-							cpu.v[0xF] = (byte) 0x0;
+							cpu.v[0xF] = (short) 0x0;
 						}
 
 						cpu.v[x] = (short) ((cpu.v[y] - cpu.v[x]) & 0xFF);
 						break;
 
 					case 0xE:
-
-						byte b = (byte) (cpu.v[x] >>> 7 & 0x01);
-						cpu.v[0xF] = (short) (b & 0x01);
+						cpu.v[0xF] = (short) (((cpu.v[x] & 0xFF) >>> 7) & 0x01);
 						cpu.v[x] = (short) ((cpu.v[x] << 1) & 0xFF);
-
 						break;
 				}
 				break;
@@ -195,36 +192,36 @@ public class ProcesingUnit {
 				cpu.v[x] = (short) ((cpu.rnd.nextInt(256) & kk) & 0xFF);
 				break;
 			/*
-			case 0xD: // DRW
-
-				cpu.v[15] = 0;
-				for (int j = 0; j < n; j++) {
-					short sprite = cpu.memory[cpu.i + j];
-
-					for (int i = 0; i < 8; i++) {
-						int px = (cpu.v[x] + i) & 63;
-						int py = (cpu.v[y] + j) & 31;
-						int pos = ((64 * py + px));
-
-						boolean isActive = (sprite & (1 << (7 - i))) != 0;
-
-						if (isActive & (cpu.screen[pos] == 1))
-							cpu.v[15] = 1;
-
-						cpu.screen[pos] ^= (short) (isActive ? 1 : 0);
-					}
-				}
-
-				display.drawFlag = true;
-
-				break;
-
-			*/
+			 * case 0xD: // DRW
+			 * 
+			 * cpu.v[15] = 0;
+			 * for (int j = 0; j < n; j++) {
+			 * short sprite = cpu.memory[cpu.i + j];
+			 * 
+			 * for (int i = 0; i < 8; i++) {
+			 * int px = (cpu.v[x] + i) & 63;
+			 * int py = (cpu.v[y] + j) & 31;
+			 * int pos = ((64 * py + px));
+			 * 
+			 * boolean isActive = (sprite & (1 << (7 - i))) != 0;
+			 * 
+			 * if (isActive & (cpu.screen[pos] == 1))
+			 * cpu.v[15] = 1;
+			 * 
+			 * cpu.screen[pos] ^= (short) (isActive ? 1 : 0);
+			 * }
+			 * }
+			 * 
+			 * display.drawFlag = true;
+			 * 
+			 * break;
+			 * 
+			 */
 
 			case 0xD: // DRW Vx, Vy, n
 				int vx = cpu.v[x] & 0xFF; // Coordenada X inicial
 				int vy = cpu.v[y] & 0xFF; // Coordenada Y inicial
-				cpu.v[0xF] = 0;           // Reset del flag de colisión
+				cpu.v[0xF] = 0; // Reset del flag de colisión
 
 				for (int row = 0; row < n; row++) {
 					// Leemos el byte del sprite desde la memoria (8 píxeles horizontales)
@@ -240,16 +237,16 @@ public class ProcesingUnit {
 
 							// Colisión: si el píxel ya estaba encendido (1), ponemos VF = 1
 							if (cpu.screen[pos] == 1) {
-							cpu.v[0xF] = 1;
+								cpu.v[0xF] = 1;
 							}
 
 							// XOR: Encender/Apagar el píxel
 							cpu.screen[pos] ^= 1;
+						}
 					}
 				}
-			}
-			display.drawFlag = true;
-			break;
+				display.drawFlag = true;
+				break;
 
 			case 0xE:
 
@@ -298,8 +295,8 @@ public class ProcesingUnit {
 						cpu.i = (short) (cpu.i + cpu.v[x]);
 						break;
 
-					case 0x29: // Draw Sprites
-						cpu.i = (short) (0x50 + cpu.v[x] * 5);
+					case 0x29: // LD F, Vx (Point I to character sprite)
+						cpu.i = (short) (0x50 + (cpu.v[x] & 0x0F) * 5);
 						break;
 
 					case 0x33:
@@ -321,7 +318,7 @@ public class ProcesingUnit {
 						}
 						break;
 				}
-				break; //No sé si es correcto
+				break; // No sé si es correcto
 		}
 	}
 
@@ -329,10 +326,10 @@ public class ProcesingUnit {
 		if (cpu.dt > 0) {
 			cpu.dt--;
 		}
-			
+
 		if (cpu.st > 0) {
 			if (cpu.st == 1) {
-				//Toolkit.getDefaultToolkit().beep();
+				// Toolkit.getDefaultToolkit().beep();
 			}
 			cpu.st--;
 		}
