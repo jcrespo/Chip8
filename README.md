@@ -1,7 +1,7 @@
 # CHIP-8 Emulator
 
-Another Chip8 emulator - For educational purposes
-2018 - Javier Crespo
+Another Chip8 emulator writed For educational purposes
+2018-2026 by Javier Crespo
 
 ## Description
 
@@ -17,7 +17,22 @@ Over the decades, CHIP-8 has maintained a dedicated following in the hobbyist an
 
 - [Wikipedia CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) // Description
 - [Cowgod's CHIP-8 Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) // Technical Reference
-- [How to write an emulator CHIP-8 interpreter](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/)
+- [How to write an emulator CHIP-8 interpreter](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/) // Tutorial
+ 
+ ## Controls
+ 
+ The emulator uses the following mapping for the CHIP-8 hexadecimal keypad:
+ 
+ | CHIP-8 | Keyboard |
+ | :---: | :---: |
+ | 1 2 3 C | 1 2 3 4 |
+ | 4 5 6 D | Q W E R |
+ | 7 8 9 E | A S D F |
+ | A 0 B F | Z X C V |
+ 
+ For **Pong**:
+ - **Player 1:** `1` (Up), `Q` (Down)
+ - **Player 2:** `4` (Up), `R` (Down)
 
 ## Usage
 

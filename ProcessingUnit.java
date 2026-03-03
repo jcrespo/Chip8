@@ -26,7 +26,7 @@ public class ProcessingUnit {
 	 * Runs a single frame of instructions (usually 60Hz).
 	 */
 	public void run() {
-		var instructionsPerFrame = 15;
+		var instructionsPerFrame = 8;
 
 		for (var i = 0; i < instructionsPerFrame; i++) {
 			cycle();

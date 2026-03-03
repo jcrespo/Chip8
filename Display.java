@@ -14,6 +14,8 @@ public class Display extends JPanel {
     private static final int COL = 64;
 
     private short[] screen;
+    private final int[] decayBuffer = new int[64 * 32];
+    private static final int MAX_DECAY = 3;
 
     /** Flag indicating that the screen needs to be redrawn. */
     public boolean drawFlag;
@@ -43,14 +45,21 @@ public class Display extends JPanel {
         if (screen == null)
             return;
 
+        for (var i = 0; i < screen.length; i++) {
+            if ((screen[i] & 0xFF) == 1) {
+                decayBuffer[i] = MAX_DECAY;
+            } else if (decayBuffer[i] > 0) {
+                decayBuffer[i]--;
+            }
+        }
+
         for (var y = 0; y < FIL; y++) {
             for (var x = 0; x < COL; x++) {
-                if ((screen[x + (y * COL)] & 0xFF) == 1) {
+                var pos = x + (y * COL);
+                if (decayBuffer[pos] > 0) {
                     g.setColor(Color.WHITE);
-                } else {
-                    g.setColor(Color.BLACK);
+                    g.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
                 }
-                g.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
             }
         }
     }
